@@ -1,0 +1,603 @@
+<!-- Entrenador de Física: MAS y Momento Angular -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entrenador · MAS y Momento Angular</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1419; --panel:#161b22; --panel2:#1b212b; --ink:#e9e6dd; --muted:#8b95a3;
+    --line:#28313d; --amber:#f0a830; --amber2:#ffd27a; --cyan:#46cabb; --cyan2:#8ee9dd;
+    --green:#5fd07a; --red:#e9746b; --accent:var(--amber); --accent2:var(--amber2);
+    --serif:"Fraunces",Georgia,serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --sans:"IBM Plex Sans",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:var(--sans); color:var(--ink); background:var(--bg);
+    background-image:
+      radial-gradient(900px 500px at 80% -10%, rgba(240,168,48,.10), transparent 60%),
+      radial-gradient(700px 500px at -10% 110%, rgba(70,202,187,.08), transparent 60%),
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:auto,auto,28px 28px,28px 28px;
+    background-position:0 0,0 0,-1px -1px,-1px -1px;
+    min-height:100vh; padding:28px 16px 64px;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  h1{font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-.5px;margin:0;line-height:1}
+  h1 .dot{color:var(--accent)}
+  .sub{color:var(--muted);font-size:13px;font-family:var(--mono)}
+  /* controls */
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px}
+  .seg button{font-family:var(--mono);font-size:12.5px;color:var(--muted);background:none;border:0;padding:7px 12px;border-radius:8px;cursor:pointer;transition:.18s;letter-spacing:.2px}
+  .seg button:hover{color:var(--ink)}
+  .seg button.on{background:var(--accent);color:#1a1206;font-weight:600}
+  .seg.cyan button.on{background:var(--cyan);color:#06201d}
+  select{font-family:var(--mono);font-size:12.5px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:7px 10px;cursor:pointer}
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:12px 14px}
+  .stat .k{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+  .stat .v{font-family:var(--serif);font-weight:600;font-size:26px;line-height:1.1;margin-top:4px}
+  .stat .v small{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:400}
+  .flame.live{color:var(--accent)}
+  /* card */
+  .card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:18px;padding:22px 22px 20px;box-shadow:0 18px 50px -28px rgba(0,0,0,.8)}
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.5px;color:var(--accent2);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);background:color-mix(in srgb,var(--accent) 12%,transparent);padding:3px 9px;border-radius:999px;margin-bottom:14px}
+  .tag.cyan{color:var(--cyan2);border-color:color-mix(in srgb,var(--cyan) 40%,transparent);background:color-mix(in srgb,var(--cyan) 12%,transparent)}
+  .stmt{font-size:17px;line-height:1.6}
+  .stmt b{color:var(--accent2);font-weight:600;font-family:var(--mono)}
+  .stmt .f{font-family:var(--mono);background:rgba(255,255,255,.04);padding:1px 5px;border-radius:5px;white-space:nowrap}
+  .ask{margin-top:14px;font-family:var(--mono);color:var(--muted);font-size:13px}
+  .answer{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+  input.num{font-family:var(--mono);font-size:20px;background:#0c1117;border:1.5px solid var(--line);border-radius:11px;padding:10px 14px;color:var(--ink);width:170px;outline:none;transition:.15s}
+  input.num:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+  .unit{font-family:var(--mono);font-size:17px;color:var(--accent2)}
+  .btns{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  button.act{font-family:var(--mono);font-weight:600;font-size:14px;border:0;border-radius:11px;padding:11px 18px;cursor:pointer;transition:.16s;letter-spacing:.3px}
+  .primary{background:var(--accent);color:#1a1206}
+  .primary:hover{filter:brightness(1.08)}
+  .ghost{background:transparent;color:var(--muted);border:1px solid var(--line)!important}
+  .ghost:hover{color:var(--ink);border-color:var(--accent)!important}
+  /* feedback */
+  .fb{margin-top:16px;border-radius:13px;padding:0;max-height:0;overflow:hidden;transition:max-height .35s ease}
+  .fb.show{max-height:1400px}
+  .fbinner{padding:14px 16px;border-radius:13px;border:1px solid var(--line)}
+  .fbinner.ok{border-color:color-mix(in srgb,var(--green) 50%,transparent);background:color-mix(in srgb,var(--green) 9%,transparent)}
+  .fbinner.no{border-color:color-mix(in srgb,var(--red) 50%,transparent);background:color-mix(in srgb,var(--red) 9%,transparent)}
+  .verdict{font-family:var(--serif);font-weight:600;font-size:19px;display:flex;align-items:center;gap:9px}
+  .verdict.ok{color:var(--green)} .verdict.no{color:var(--red)}
+  .sol{margin-top:12px;font-size:14.5px;line-height:1.7;border-top:1px dashed var(--line);padding-top:12px}
+  .sol .step{margin:7px 0}
+  .sol .lab{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:1px}
+  .sol code{font-family:var(--mono);font-size:14px;background:rgba(255,255,255,.05);padding:2px 6px;border-radius:6px;color:var(--amber2)}
+  .sol .res{font-family:var(--mono);color:var(--green);font-weight:600}
+  .shake{animation:sh .4s}
+  @keyframes sh{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+  .pop{animation:pp .35s}
+  @keyframes pp{0%{transform:scale(.97)}50%{transform:scale(1.012)}100%{transform:scale(1)}}
+  footer{margin-top:22px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:11.5px;line-height:1.7}
+  .kbd{border:1px solid var(--line);border-radius:5px;padding:1px 6px;background:var(--panel)}
+  @media(max-width:520px){h1{font-size:24px}.stmt{font-size:16px}.stats{gap:7px}.stat{padding:10px}}
+</style>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Entrenador<span class="dot">.</span></h1>
+      <div class="sub">MAS · Momento Angular — repite hasta dominar</div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="seg" id="topicSeg">
+      <button data-t="mas" class="on">MAS</button>
+      <button data-t="ma">Momento Angular</button>
+      <button data-t="mix">Mixto</button>
+    </div>
+    <select id="level">
+      <option value="all">Nivel: completo</option>
+      <option value="basic">Nivel: básico</option>
+    </select>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="k">Racha</div><div class="v"><span id="streak" class="flame">0</span> <small id="best"></small></div></div>
+    <div class="stat"><div class="k">Aciertos</div><div class="v"><span id="correct">0</span><small id="total">/0</small></div></div>
+    <div class="stat"><div class="k">Precisión</div><div class="v"><span id="acc">—</span><small>%</small></div></div>
+  </div>
+
+  <div class="card pop" id="card">
+    <span class="tag" id="tag">MAS</span>
+    <div class="stmt" id="stmt"></div>
+    <div class="ask" id="ask"></div>
+    <div class="answer">
+      <input class="num" id="ans" inputmode="decimal" autocomplete="off" placeholder="?">
+      <span class="unit" id="unit"></span>
+    </div>
+    <div class="btns">
+      <button class="act primary" id="check">Verificar</button>
+      <button class="act ghost" id="sol">Ver solución</button>
+    </div>
+    <div class="fb" id="fb"><div class="fbinner" id="fbinner"></div></div>
+  </div>
+
+  <footer>
+    <span class="kbd">Enter</span> verifica / siguiente &nbsp;·&nbsp; tolerancia ±3% &nbsp;·&nbsp; usa g = 9.8 m/s²<br>
+    <span id="persistNote"></span>
+  </footer>
+</div>
+
+<script>
+const g=9.8;
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function fmt(x){
+  if(x===0)return"0"; const a=Math.abs(x); let s;
+  if(a>=100)s=x.toFixed(0); else if(a>=10)s=x.toFixed(1);
+  else if(a>=1)s=x.toFixed(2); else s=x.toPrecision(3);
+  return parseFloat(s).toString();
+}
+const PI="π", OM="ω", TH="θ";
+// ---- helpers para enunciados ----
+const v=(x)=>`<b>${x}</b>`;          // valor resaltado
+const f=(x)=>`<span class="f">${x}</span>`; // fórmula inline
+
+// =================== GENERADORES MAS ===================
+const MAS=[
+ {lvl:'basic',gen(){const A=pick([2,3,4,5,6,8,10]),w=pick([2,3,4,5,6,8]);
+   const ans=(A/100)*w;
+   return{tag:'MAS · v máxima',
+    stmt:`Un oscilador en MAS tiene amplitud A = ${v(A+' cm')} y frecuencia angular ${OM} = ${v(w+' rad/s')}.`,
+    ask:`Halla la rapidez máxima v_max (en m/s).`, unit:'m/s', ans,
+    sol:[['Fórmula',`v<sub>max</sub> = A${OM}`],
+         ['Pasa A a metros',`A = ${A} cm = ${fmt(A/100)} m`],
+         ['Reemplaza',`v<sub>max</sub> = ${fmt(A/100)} · ${w}`],
+         ['Resultado',`<span class="res">${fmt(ans)} m/s</span>`]]};}},
+
+ {lvl:'basic',gen(){const A=pick([2,3,4,5,6,8,10]),w=pick([2,3,4,5,6,8]);
+   const ans=(A/100)*w*w;
+   return{tag:'MAS · a máxima',
+    stmt:`Un MAS tiene amplitud A = ${v(A+' cm')} y ${OM} = ${v(w+' rad/s')}.`,
+    ask:`Halla la aceleración máxima a_max (en m/s²).`, unit:'m/s²', ans,
+    sol:[['Fórmula',`a<sub>max</sub> = A${OM}²`],
+         ['A en metros',`A = ${fmt(A/100)} m`],
+         ['Reemplaza',`a<sub>max</sub> = ${fmt(A/100)} · ${w}²= ${fmt(A/100)} · ${w*w}`],
+         ['Resultado',`<span class="res">${fmt(ans)} m/s²</span>`]]};}},
+
+ {lvl:'basic',gen(){const w=pick([2,3,4,5,6,8,10]); const ans=2*Math.PI/w;
+   return{tag:'MAS · periodo',
+    stmt:`Un MAS oscila con frecuencia angular ${OM} = ${v(w+' rad/s')}.`,
+    ask:`Halla el periodo T (en s).`, unit:'s', ans,
+    sol:[['Fórmula',`T = 2${PI}/${OM}`],
+         ['Reemplaza',`T = 2${PI}/${w} = 6.283/${w}`],
+         ['Resultado',`<span class="res">${fmt(ans)} s</span>`]]};}},
+
+ {lvl:'basic',gen(){const w=pick([2,3,4,5,6,8,10,12]); const ans=w/(2*Math.PI);
+   return{tag:'MAS · frecuencia',
+    stmt:`Un MAS tiene ${OM} = ${v(w+' rad/s')}.`,
+    ask:`Halla la frecuencia f (en Hz).`, unit:'Hz', ans,
+    sol:[['Fórmula',`f = ${OM}/(2${PI})`],
+         ['Reemplaza',`f = ${w}/6.283`],
+         ['Resultado',`<span class="res">${fmt(ans)} Hz</span>`]]};}},
+
+ {lvl:'basic',gen(){const fr=pick([0.5,1,1.5,2,2.5,3,4,5]); const ans=2*Math.PI*fr;
+   return{tag:'MAS · de f a ω',
+    stmt:`Un MAS tiene frecuencia f = ${v(fr+' Hz')}.`,
+    ask:`Halla la frecuencia angular ${OM} (en rad/s).`, unit:'rad/s', ans,
+    sol:[['Fórmula',`${OM} = 2${PI}f`],
+         ['Reemplaza',`${OM} = 2${PI}·${fr}`],
+         ['Resultado',`<span class="res">${fmt(ans)} rad/s</span>`]]};}},
+
+ {lvl:'basic',gen(){const k=pick([100,150,200,250,300,400,500]),A=pick([2,3,4,5,6,8,10]);
+   const ans=0.5*k*Math.pow(A/100,2);
+   return{tag:'MAS · energía',
+    stmt:`Un sistema masa–resorte tiene constante k = ${v(k+' N/m')} y oscila con amplitud A = ${v(A+' cm')}.`,
+    ask:`Halla la energía mecánica total E (en J).`, unit:'J', ans,
+    sol:[['Fórmula',`E = ½kA²`],
+         ['A en metros',`A = ${fmt(A/100)} m`],
+         ['Reemplaza',`E = ½·${k}·(${fmt(A/100)})² = ½·${k}·${fmt(Math.pow(A/100,2))}`],
+         ['Resultado',`<span class="res">${fmt(ans)} J</span>`]]};}},
+
+ {lvl:'all',gen(){const m=pick([0.5,1,2,4,5]),k=pick([50,80,100,128,200,288,320]);
+   const ans=Math.sqrt(k/m);
+   return{tag:'MAS · ω del resorte',
+    stmt:`Un bloque de masa m = ${v(m+' kg')} cuelga de un resorte de constante k = ${v(k+' N/m')}.`,
+    ask:`Halla la frecuencia angular ${OM} (en rad/s).`, unit:'rad/s', ans,
+    sol:[['Fórmula',`${OM} = √(k/m)`],
+         ['Reemplaza',`${OM} = √(${k}/${m}) = √${fmt(k/m)}`],
+         ['Resultado',`<span class="res">${fmt(ans)} rad/s</span>`]]};}},
+
+ {lvl:'all',gen(){const m=pick([0.5,1,2,4]),k=pick([50,80,100,128,200,200,128]);
+   const ans=2*Math.PI*Math.sqrt(m/k);
+   return{tag:'MAS · periodo del resorte',
+    stmt:`Masa m = ${v(m+' kg')} en un resorte con k = ${v(k+' N/m')}.`,
+    ask:`Halla el periodo T (en s).`, unit:'s', ans,
+    sol:[['Fórmula',`T = 2${PI}√(m/k)`],
+         ['Reemplaza',`T = 2${PI}·√(${m}/${k}) = 2${PI}·${fmt(Math.sqrt(m/k))}`],
+         ['Resultado',`<span class="res">${fmt(ans)} s</span>`]]};}},
+
+ {lvl:'all',gen(){const A=pick([5,6,8,10]),w=pick([2,3,4,5,6]),frac=pick([0.4,0.5,0.6]);
+   const x=Math.round(A*frac); const ans=w*Math.sqrt(Math.pow(A/100,2)-Math.pow(x/100,2));
+   return{tag:'MAS · v en una posición',
+    stmt:`Un MAS tiene A = ${v(A+' cm')} y ${OM} = ${v(w+' rad/s')}.`,
+    ask:`Halla la rapidez v cuando x = ${v(x+' cm')} (en m/s).`, unit:'m/s', ans,
+    sol:[['Fórmula',`v = ${OM}√(A² − x²)`],
+         ['A metros',`A = ${fmt(A/100)} m, x = ${fmt(x/100)} m`],
+         ['Reemplaza',`v = ${w}·√(${fmt(Math.pow(A/100,2))} − ${fmt(Math.pow(x/100,2))})`],
+         ['Resultado',`<span class="res">${fmt(ans)} m/s</span>`]]};}},
+
+ {lvl:'all',gen(){const m=pick([0.5,1,2]),k=pick([100,200,288,320,450]),A=pick([3,4,5,6,8]);
+   const w=Math.sqrt(k/m); const ans=w*(A/100);
+   return{tag:'MAS · v máxima (con resorte)',
+    stmt:`Masa m = ${v(m+' kg')}, resorte k = ${v(k+' N/m')}, amplitud A = ${v(A+' cm')}.`,
+    ask:`Halla la rapidez máxima v_max (en m/s).`, unit:'m/s', ans,
+    sol:[['Primero ω',`${OM} = √(k/m) = √(${k}/${m}) = ${fmt(w)} rad/s`],
+         ['Fórmula',`v<sub>max</sub> = A${OM}`],
+         ['Reemplaza',`v<sub>max</sub> = ${fmt(A/100)}·${fmt(w)}`],
+         ['Resultado',`<span class="res">${fmt(ans)} m/s</span>`]]};}},
+
+ // ---------- casos adicionales MAS ----------
+ {lvl:'all',gen(){const m=pick([0.5,1,2,4]),w=pick([3,4,5,6,8,10]); const ans=m*w*w;
+   return{tag:'MAS · k del resorte',
+    stmt:`Un bloque de masa m = ${v(m+' kg')} oscila con frecuencia angular ${OM} = ${v(w+' rad/s')}.`,
+    ask:`Halla la constante del resorte k (en N/m).`, unit:'N/m', ans,
+    sol:[['De ω',`${OM} = √(k/m) ⟹ k = m${OM}²`],
+         ['Reemplaza',`k = ${m}·${w}² = ${m}·${w*w}`],
+         ['Resultado',`<span class="res">${fmt(ans)} N/m</span>`]]};}},
+
+ {lvl:'all',gen(){const k=pick([100,150,200,288,320,450]),w=pick([4,5,6,8,10]); const ans=k/(w*w);
+   return{tag:'MAS · masa desde ω',
+    stmt:`Un resorte de constante k = ${v(k+' N/m')} hace oscilar a un bloque con ${OM} = ${v(w+' rad/s')}.`,
+    ask:`Halla la masa m del bloque (en kg).`, unit:'kg', ans,
+    sol:[['De ω',`${OM} = √(k/m) ⟹ m = k/${OM}²`],
+         ['Reemplaza',`m = ${k}/${w}² = ${k}/${w*w}`],
+         ['Resultado',`<span class="res">${fmt(ans)} kg</span>`]]};}},
+
+ {lvl:'all',gen(){const k=pick([100,200,300,400,500]),T=pick([0.5,1,1.5,2]); const ans=k*Math.pow(T/(2*Math.PI),2);
+   return{tag:'MAS · masa desde T',
+    stmt:`Un sistema masa–resorte con k = ${v(k+' N/m')} tiene periodo T = ${v(T+' s')}.`,
+    ask:`Halla la masa m (en kg).`, unit:'kg', ans,
+    sol:[['De T',`T = 2${PI}√(m/k) ⟹ m = k(T/2${PI})²`],
+         ['Reemplaza',`m = ${k}·(${T}/6.283)² = ${k}·${fmt(Math.pow(T/(2*Math.PI),2))}`],
+         ['Resultado',`<span class="res">${fmt(ans)} kg</span>`]]};}},
+
+ {lvl:'basic',gen(){const k=pick([100,150,200,250,300,400]),A=pick([2,3,4,5,6,8]); const ans=k*(A/100);
+   return{tag:'MAS · fuerza máxima',
+    stmt:`Un resorte de constante k = ${v(k+' N/m')} oscila con amplitud A = ${v(A+' cm')}.`,
+    ask:`Halla la fuerza máxima F_max sobre el bloque (en N).`, unit:'N', ans,
+    sol:[['Fórmula',`F<sub>max</sub> = kA (es la fuerza recuperadora en x = A)`],
+         ['A en metros',`A = ${fmt(A/100)} m`],
+         ['Reemplaza',`F<sub>max</sub> = ${k}·${fmt(A/100)}`],
+         ['Resultado',`<span class="res">${fmt(ans)} N</span>`]]};}},
+
+ {lvl:'all',gen(){const m=pick([0.5,1,2,3]),A=pick([3,4,5,6,8]),w=pick([3,4,5,6]); const ans=m*(A/100)*w*w;
+   return{tag:'MAS · fuerza máxima (m, ω)',
+    stmt:`Un bloque de masa m = ${v(m+' kg')} hace MAS con A = ${v(A+' cm')} y ${OM} = ${v(w+' rad/s')}.`,
+    ask:`Halla la fuerza máxima F_max (en N).`, unit:'N', ans,
+    sol:[['Fórmula',`F<sub>max</sub> = m·a<sub>max</sub> = mA${OM}²`],
+         ['A en metros',`A = ${fmt(A/100)} m`],
+         ['Reemplaza',`F<sub>max</sub> = ${m}·${fmt(A/100)}·${w}²`],
+         ['Resultado',`<span class="res">${fmt(ans)} N</span>`]]};}},
+
+ {lvl:'basic',gen(){const w=pick([3,4,5,6,8]),x=pick([2,3,4,5,6]); const ans=w*w*(x/100);
+   return{tag:'MAS · aceleración en x',
+    stmt:`Un MAS tiene ${OM} = ${v(w+' rad/s')}. En cierto instante el cuerpo está en x = ${v(x+' cm')}.`,
+    ask:`Halla la magnitud de la aceleración ahí (en m/s²).`, unit:'m/s²', ans,
+    sol:[['Fórmula',`a = ${OM}²x (en módulo)`],
+         ['x en metros',`x = ${fmt(x/100)} m`],
+         ['Reemplaza',`a = ${w}²·${fmt(x/100)} = ${w*w}·${fmt(x/100)}`],
+         ['Resultado',`<span class="res">${fmt(ans)} m/s²</span>`]]};}},
+
+ {lvl:'all',gen(){const k=pick([100,150,200,300,400]),A=pick([5,6,8,10]),fr=pick([0.4,0.5,0.6]);
+   const x=Math.round(A*fr); const ans=0.5*k*(Math.pow(A/100,2)-Math.pow(x/100,2));
+   return{tag:'MAS · energía cinética en x',
+    stmt:`Un sistema masa–resorte (k = ${v(k+' N/m')}) oscila con A = ${v(A+' cm')}.`,
+    ask:`Halla la energía cinética cuando x = ${v(x+' cm')} (en J).`, unit:'J', ans,
+    sol:[['Fórmula',`K = ½k(A² − x²)`],
+         ['A metros',`A = ${fmt(A/100)} m, x = ${fmt(x/100)} m`],
+         ['Reemplaza',`K = ½·${k}·(${fmt(Math.pow(A/100,2))} − ${fmt(Math.pow(x/100,2))})`],
+         ['Resultado',`<span class="res">${fmt(ans)} J</span>`]]};}},
+
+ {lvl:'all',gen(){const k=pick([100,150,200,300,400]),x=pick([2,3,4,5,6]); const ans=0.5*k*Math.pow(x/100,2);
+   return{tag:'MAS · energía potencial en x',
+    stmt:`Un resorte de constante k = ${v(k+' N/m')} está deformado x = ${v(x+' cm')}.`,
+    ask:`Halla la energía potencial elástica (en J).`, unit:'J', ans,
+    sol:[['Fórmula',`U = ½kx²`],
+         ['x en metros',`x = ${fmt(x/100)} m`],
+         ['Reemplaza',`U = ½·${k}·(${fmt(x/100)})²`],
+         ['Resultado',`<span class="res">${fmt(ans)} J</span>`]]};}},
+
+ {lvl:'all',gen(){const w=pick([2,3,4,5,6,8]),A=pick([4,5,6,8,10]); const vm=(A/100)*w, am=(A/100)*w*w; const ans=w;
+   return{tag:'MAS · ω desde v_max y a_max',
+    stmt:`Un MAS tiene v_max = ${v(fmt(vm)+' m/s')} y a_max = ${v(fmt(am)+' m/s²')}.`,
+    ask:`Halla la frecuencia angular ${OM} (en rad/s).`, unit:'rad/s', ans,
+    sol:[['Truco',`v<sub>max</sub> = A${OM}, a<sub>max</sub> = A${OM}² ⟹ ${OM} = a<sub>max</sub>/v<sub>max</sub>`],
+         ['Reemplaza',`${OM} = ${fmt(am)}/${fmt(vm)}`],
+         ['Resultado',`<span class="res">${fmt(ans)} rad/s</span>`]]};}},
+
+ {lvl:'all',gen(){const w=pick([2,3,4,5,6,8]),A=pick([4,5,6,8,10]); const vm=(A/100)*w, am=(A/100)*w*w; const ans=A/100;
+   return{tag:'MAS · A desde v_max y a_max',
+    stmt:`Un MAS tiene v_max = ${v(fmt(vm)+' m/s')} y a_max = ${v(fmt(am)+' m/s²')}.`,
+    ask:`Halla la amplitud A (en m).`, unit:'m', ans,
+    sol:[['Truco',`v<sub>max</sub>²/a<sub>max</sub> = (A²${OM}²)/(A${OM}²) = A`],
+         ['Reemplaza',`A = ${fmt(vm)}²/${fmt(am)} = ${fmt(vm*vm)}/${fmt(am)}`],
+         ['Resultado',`<span class="res">${fmt(ans)} m</span>`]]};}},
+
+ {lvl:'all',gen(){const w=pick([2,3,4,5,6,8]),A=pick([4,5,6,8,10]); const vm=(A/100)*w; const ans=vm/(A/100);
+   return{tag:'MAS · ω desde v_max y A',
+    stmt:`Un MAS tiene v_max = ${v(fmt(vm)+' m/s')} con amplitud A = ${v(A+' cm')}.`,
+    ask:`Halla la frecuencia angular ${OM} (en rad/s).`, unit:'rad/s', ans,
+    sol:[['Fórmula',`v<sub>max</sub> = A${OM} ⟹ ${OM} = v<sub>max</sub>/A`],
+         ['A en metros',`A = ${fmt(A/100)} m`],
+         ['Reemplaza',`${OM} = ${fmt(vm)}/${fmt(A/100)}`],
+         ['Resultado',`<span class="res">${fmt(ans)} rad/s</span>`]]};}},
+
+ {lvl:'all',gen(){const T=pick([0.5,1,1.5,2,2.5]),A=pick([3,4,5,6,8,10]); const ans=2*Math.PI*(A/100)/T;
+   return{tag:'MAS · v_max desde T y A',
+    stmt:`Un MAS tiene periodo T = ${v(T+' s')} y amplitud A = ${v(A+' cm')}.`,
+    ask:`Halla la rapidez máxima v_max (en m/s).`, unit:'m/s', ans,
+    sol:[['Fórmula',`v<sub>max</sub> = A${OM} = A·2${PI}/T`],
+         ['A en metros',`A = ${fmt(A/100)} m`],
+         ['Reemplaza',`v<sub>max</sub> = ${fmt(A/100)}·2${PI}/${T}`],
+         ['Resultado',`<span class="res">${fmt(ans)} m/s</span>`]]};}},
+];
+
+// =================== GENERADORES MOMENTO ANGULAR ===================
+const MA=[
+ {lvl:'basic',gen(){const I1=pick([1,1.5,2,3,4]),w1=pick([5,8,10,12,15,20]),I2=pick([0.5,1,2,3]);
+   const ans=I1*w1/(I1+I2);
+   return{tag:'L · disco que cae',cyan:1,
+    stmt:`Un disco con I₁ = ${v(I1+' kg·m²')} gira a ${OM}₁ = ${v(w1+' rad/s')}. Sobre él cae y se acopla un segundo disco en reposo, con I₂ = ${v(I2+' kg·m²')}.`,
+    ask:`Halla la velocidad angular final ${OM}f (en rad/s).`, unit:'rad/s', ans,
+    sol:[['Conservación',`I₁${OM}₁ = (I₁+I₂)${OM}f`],
+         ['Despeja',`${OM}f = I₁${OM}₁/(I₁+I₂)`],
+         ['Reemplaza',`${OM}f = (${I1}·${w1})/(${I1}+${I2}) = ${fmt(I1*w1)}/${fmt(I1+I2)}`],
+         ['Resultado',`<span class="res">${fmt(ans)} rad/s</span>`]]};}},
+
+ {lvl:'basic',gen(){const n=pick([2,3,4]),w=pick([6,9,12,15,18,8,10]);
+   const ans=w/n;
+   return{tag:'L · n discos idénticos',cyan:1,
+    stmt:`Un disco gira a ${OM}₀ = ${v(w+' rad/s')}. Se le acoplan encima ${v((n-1)+(n-1===1?' disco idéntico':' discos idénticos'))} en reposo (en total ${n} discos iguales).`,
+    ask:`Halla la velocidad angular final ${OM}f (en rad/s).`, unit:'rad/s', ans,
+    sol:[['Conservación',`I${OM}₀ = (nI)${OM}f`],
+         ['Como son iguales',`${OM}f = ${OM}₀/n = ${w}/${n}`],
+         ['Resultado',`<span class="res">${fmt(ans)} rad/s</span> — la masa y el radio no importan`]]};}},
+
+ {lvl:'basic',gen(){const I1=pick([4,6,8,9]),w1=pick([1,1.5,2,3]),I2=pick([1,2,3]);
+   const ans=I1*w1/I2;
+   return{tag:'L · patinador / brazos',cyan:1,
+    stmt:`Una patinadora gira con I₁ = ${v(I1+' kg·m²')} a ${OM}₁ = ${v(w1+' rad/s')}. Encoge los brazos y su inercia baja a I₂ = ${v(I2+' kg·m²')}.`,
+    ask:`Halla su nueva velocidad angular ${OM}₂ (en rad/s).`, unit:'rad/s', ans,
+    sol:[['Conservación',`I₁${OM}₁ = I₂${OM}₂`],
+         ['Despeja',`${OM}₂ = I₁${OM}₁/I₂`],
+         ['Reemplaza',`${OM}₂ = (${I1}·${w1})/${I2} = ${fmt(I1*w1)}/${I2}`],
+         ['Resultado',`<span class="res">${fmt(ans)} rad/s</span> — gira más rápido`]]};}},
+
+ {lvl:'basic',gen(){const m=pick([1,2,3,5]),Rr=pick([0.1,0.2,0.3,0.4,0.5]),w=pick([4,6,8,10]);
+   const ans=0.5*m*Rr*Rr*w;
+   return{tag:'L · de un disco',cyan:1,
+    stmt:`Un disco macizo de masa m = ${v(m+' kg')} y radio R = ${v(Rr+' m')} gira a ${OM} = ${v(w+' rad/s')}. (I = ½mR²)`,
+    ask:`Halla su momento angular L (en kg·m²/s).`, unit:'kg·m²/s', ans,
+    sol:[['Fórmula',`L = I${OM} = ½mR²${OM}`],
+         ['Reemplaza',`L = ½·${m}·${Rr}²·${w} = ½·${m}·${fmt(Rr*Rr)}·${w}`],
+         ['Resultado',`<span class="res">${fmt(ans)} kg·m²/s</span>`]]};}},
+
+ {lvl:'basic',gen(){const m=pick([1,2,3,5]),Rr=pick([0.1,0.2,0.3,0.5]),w=pick([4,6,8,10]);
+   const ans=0.4*m*Rr*Rr*w;
+   return{tag:'L · de una esfera',cyan:1,
+    stmt:`Una esfera maciza de masa m = ${v(m+' kg')} y radio R = ${v(Rr+' m')} gira a ${OM} = ${v(w+' rad/s')}. (I = ⅖mR²)`,
+    ask:`Halla su momento angular L (en kg·m²/s).`, unit:'kg·m²/s', ans,
+    sol:[['Fórmula',`L = I${OM} = ⅖mR²${OM}`],
+         ['Reemplaza',`L = 0.4·${m}·${Rr}²·${w} = 0.4·${m}·${fmt(Rr*Rr)}·${w}`],
+         ['Resultado',`<span class="res">${fmt(ans)} kg·m²/s</span>`]]};}},
+
+ {lvl:'basic',gen(){const m=pick([0.2,0.5,1,2]),vv=pick([2,3,4,5]),r=pick([0.5,1,1.5,2]);
+   const ans=m*vv*r;
+   return{tag:'L · masa puntual',cyan:1,
+    stmt:`Una partícula de masa m = ${v(m+' kg')} se mueve a v = ${v(vv+' m/s')} en un círculo de radio r = ${v(r+' m')} (velocidad ⟂ al radio).`,
+    ask:`Halla su momento angular L (en kg·m²/s).`, unit:'kg·m²/s', ans,
+    sol:[['Fórmula',`L = m·v·r`],
+         ['Reemplaza',`L = ${m}·${vv}·${r}`],
+         ['Resultado',`<span class="res">${fmt(ans)} kg·m²/s</span>`]]};}},
+
+ {lvl:'all',gen(){const v0=pick([2,3,4]),r0=pick([0.6,0.8,1.0,1.2]),r=pick([0.2,0.3,0.4]);
+   const ans=v0*r0/r;
+   return{tag:'L · masa girando en cuerda',cyan:1,
+    stmt:`Una masa gira sobre una mesa atada a una cuerda que pasa por un agujero. Inicialmente v₀ = ${v(v0+' m/s')} a un radio r₀ = ${v(r0+' m')}. Se tira de la cuerda hasta r = ${v(r+' m')}.`,
+    ask:`Halla la nueva rapidez v (en m/s).`, unit:'m/s', ans,
+    sol:[['Conservación',`m·v₀·r₀ = m·v·r`],
+         ['Despeja',`v = v₀·r₀/r`],
+         ['Reemplaza',`v = ${v0}·${r0}/${r} = ${fmt(v0*r0)}/${r}`],
+         ['Resultado',`<span class="res">${fmt(ans)} m/s</span>`]]};}},
+
+ {lvl:'all',gen(){const m=pick([2,3,4]),L=pick([0.6,0.9,1.2,1.5]),w=pick([3,4,5,6]);
+   const ans=(1/12)*m*L*L*w;
+   return{tag:'L · varilla por su centro',cyan:1,
+    stmt:`Una varilla uniforme de masa m = ${v(m+' kg')} y longitud L = ${v(L+' m')} gira en torno a su centro a ${OM} = ${v(w+' rad/s')}. (I = mL²/12)`,
+    ask:`Halla su momento angular L_ang (en kg·m²/s).`, unit:'kg·m²/s', ans,
+    sol:[['Fórmula',`L = I${OM} = (mL²/12)${OM}`],
+         ['Reemplaza',`L = (${m}·${L}²/12)·${w} = (${m}·${fmt(L*L)}/12)·${w}`],
+         ['Resultado',`<span class="res">${fmt(ans)} kg·m²/s</span>`]]};}},
+
+ // ---------- casos adicionales Momento Angular ----------
+ {lvl:'basic',gen(){const m=pick([1,2,3]),Rr=pick([0.2,0.3,0.4,0.5]),w=pick([4,6,8,10]); const ans=m*Rr*Rr*w;
+   return{tag:'L · de un aro',cyan:1,
+    stmt:`Un aro (anillo) de masa m = ${v(m+' kg')} y radio R = ${v(Rr+' m')} gira a ${OM} = ${v(w+' rad/s')}. (I = mR²)`,
+    ask:`Halla su momento angular L (en kg·m²/s).`, unit:'kg·m²/s', ans,
+    sol:[['Fórmula',`L = I${OM} = mR²${OM}`],
+         ['Reemplaza',`L = ${m}·${Rr}²·${w} = ${m}·${fmt(Rr*Rr)}·${w}`],
+         ['Resultado',`<span class="res">${fmt(ans)} kg·m²/s</span>`]]};}},
+
+ {lvl:'basic',gen(){const L=pick([4,6,8,10,12]),I=pick([0.5,1,2,4]); const ans=L/I;
+   return{tag:'L · ω desde L e I',cyan:1,
+    stmt:`Un cuerpo tiene momento angular L = ${v(L+' kg·m²/s')} y momento de inercia I = ${v(I+' kg·m²')}.`,
+    ask:`Halla su velocidad angular ${OM} (en rad/s).`, unit:'rad/s', ans,
+    sol:[['Fórmula',`L = I${OM} ⟹ ${OM} = L/I`],
+         ['Reemplaza',`${OM} = ${L}/${I}`],
+         ['Resultado',`<span class="res">${fmt(ans)} rad/s</span>`]]};}},
+
+ {lvl:'basic',gen(){const L=pick([6,8,10,12,15]),w=pick([2,3,4,5]); const ans=L/w;
+   return{tag:'L · I desde L y ω',cyan:1,
+    stmt:`Un cuerpo gira a ${OM} = ${v(w+' rad/s')} con momento angular L = ${v(L+' kg·m²/s')}.`,
+    ask:`Halla su momento de inercia I (en kg·m²).`, unit:'kg·m²', ans,
+    sol:[['Fórmula',`L = I${OM} ⟹ I = L/${OM}`],
+         ['Reemplaza',`I = ${L}/${w}`],
+         ['Resultado',`<span class="res">${fmt(ans)} kg·m²</span>`]]};}},
+
+ {lvl:'all',gen(){const I1=pick([1,2,3]),w1=pick([4,6,8,10]),I2=pick([1,2,3]),w2=pick([2,3,4,6]);
+   const ans=(I1*w1+I2*w2)/(I1+I2);
+   return{tag:'L · dos discos que se acoplan',cyan:1,
+    stmt:`Dos discos girando en el mismo sentido se acoplan: I₁ = ${v(I1+' kg·m²')} a ${OM}₁ = ${v(w1+' rad/s')} e I₂ = ${v(I2+' kg·m²')} a ${OM}₂ = ${v(w2+' rad/s')}.`,
+    ask:`Halla la velocidad angular común final ${OM}f (en rad/s).`, unit:'rad/s', ans,
+    sol:[['Conservación',`I₁${OM}₁ + I₂${OM}₂ = (I₁+I₂)${OM}f`],
+         ['Despeja',`${OM}f = (I₁${OM}₁ + I₂${OM}₂)/(I₁+I₂)`],
+         ['Reemplaza',`${OM}f = (${I1}·${w1} + ${I2}·${w2})/(${I1}+${I2}) = ${fmt(I1*w1+I2*w2)}/${fmt(I1+I2)}`],
+         ['Resultado',`<span class="res">${fmt(ans)} rad/s</span>`]]};}},
+
+ {lvl:'all',gen(){const I0=pick([100,150,200,250]),w0=pick([1,1.5,2,3]),m=pick([40,50,60,70]),r=pick([1,1.5,2]);
+   const ans=I0*w0/(I0+m*r*r);
+   return{tag:'L · persona salta al borde',cyan:1,
+    stmt:`Un carrusel con I₀ = ${v(I0+' kg·m²')} gira a ${OM}₀ = ${v(w0+' rad/s')}. Una persona de m = ${v(m+' kg')} salta y se queda en el borde, a r = ${v(r+' m')} del eje (cuenta como I = mr²).`,
+    ask:`Halla la nueva velocidad angular ${OM}f (en rad/s).`, unit:'rad/s', ans,
+    sol:[['Conservación',`I₀${OM}₀ = (I₀ + mr²)${OM}f`],
+         ['Inercia que se suma',`mr² = ${m}·${r}² = ${fmt(m*r*r)} kg·m²`],
+         ['Despeja y reemplaza',`${OM}f = ${I0}·${w0}/(${I0} + ${fmt(m*r*r)})`],
+         ['Resultado',`<span class="res">${fmt(ans)} rad/s</span>`]]};}},
+
+ {lvl:'all',gen(){const I0=pick([4,6,8]),w0=pick([3,4,6]),m=pick([50,60,70]),r=pick([1,1.5]);
+   const ans=I0*w0/(I0+m*r*r);
+   return{tag:'L · se aleja del eje',cyan:1,
+    stmt:`Una persona en una plataforma giratoria (I₀ = ${v(I0+' kg·m²')}, ${OM}₀ = ${v(w0+' rad/s')}) sostiene una masa m = ${v(m+' kg')} en el centro y la lleva a r = ${v(r+' m')} del eje.`,
+    ask:`Halla la nueva velocidad angular ${OM}f (en rad/s).`, unit:'rad/s', ans,
+    sol:[['Conservación',`I₀${OM}₀ = (I₀ + mr²)${OM}f`],
+         ['Inercia añadida',`mr² = ${m}·${r}² = ${fmt(m*r*r)} kg·m²`],
+         ['Reemplaza',`${OM}f = ${I0}·${w0}/(${I0} + ${fmt(m*r*r)})`],
+         ['Resultado',`<span class="res">${fmt(ans)} rad/s</span> — más lento al alejar la masa`]]};}},
+
+ {lvl:'all',gen(){const I1=pick([1,2,3]),I2t=pick([1,2,3,4]),c=pick([2,3,4]); const w1=(I1+I2t)*c, wf=I1*c; const ans=I2t;
+   return{tag:'L · halla la inercia que cae',cyan:1,
+    stmt:`Un disco con I₁ = ${v(I1+' kg·m²')} gira a ${OM}₁ = ${v(w1+' rad/s')}. Cae un segundo disco en reposo y el conjunto queda girando a ${OM}f = ${v(wf+' rad/s')}.`,
+    ask:`Halla el momento de inercia I₂ del disco que cayó (en kg·m²).`, unit:'kg·m²', ans,
+    sol:[['Conservación',`I₁${OM}₁ = (I₁+I₂)${OM}f`],
+         ['Despeja',`I₂ = I₁(${OM}₁ − ${OM}f)/${OM}f`],
+         ['Reemplaza',`I₂ = ${I1}·(${w1} − ${wf})/${wf} = ${I1}·${fmt(w1-wf)}/${wf}`],
+         ['Resultado',`<span class="res">${fmt(ans)} kg·m²</span>`]]};}},
+
+ {lvl:'all',gen(){const I1=pick([1,2,3,4]),I2=pick([1,2,3,4]); const ans=I1/(I1+I2);
+   return{tag:'L · energía que sobrevive',cyan:1,
+    stmt:`Un disco con I₁ = ${v(I1+' kg·m²')} girando recibe encima un disco en reposo con I₂ = ${v(I2+' kg·m²')} (acople inelástico).`,
+    ask:`¿Qué fracción de la energía cinética se conserva? (decimal)`, unit:'', ans,
+    sol:[['Energías',`K antes = ½I₁${OM}₁²,  K después = ½(I₁+I₂)${OM}f²`],
+         ['Usando ωf = I₁ω₁/(I₁+I₂)',`K<sub>f</sub>/K<sub>i</sub> = I₁/(I₁+I₂)`],
+         ['Reemplaza',`= ${I1}/(${I1}+${I2})`],
+         ['Resultado',`<span class="res">${fmt(ans)}</span> (el resto se disipa por fricción al acoplarse)`]]};}},
+];
+
+// =================== ESTADO Y RENDER ===================
+let topic='mas', level='all', cur=null, verified=false;
+let stats={mas:{c:0,t:0},ma:{c:0,t:0},streak:0,best:0};
+
+function pool(){
+  let arr=[];
+  const add=(src,key)=>src.forEach(o=>{if(level==='all'||o.lvl==='basic')arr.push({o,key})});
+  if(topic==='mas')add(MAS,'mas');
+  else if(topic==='ma')add(MA,'ma');
+  else{add(MAS,'mas');add(MA,'ma');}
+  return arr;
+}
+function next(){
+  const p=pool(); const item=pick(p); cur=item.o.gen(); cur._key=item.key;
+  verified=false;
+  const card=document.getElementById('card');
+  document.getElementById('tag').textContent=cur.tag;
+  document.getElementById('tag').className='tag'+(cur.cyan?' cyan':'');
+  document.getElementById('stmt').innerHTML=cur.stmt;
+  document.getElementById('ask').textContent=cur.ask;
+  document.getElementById('unit').textContent=cur.unit;
+  const inp=document.getElementById('ans'); inp.value=''; inp.disabled=false; inp.focus();
+  document.getElementById('check').textContent='Verificar';
+  document.getElementById('fb').classList.remove('show');
+  document.getElementById('fbinner').innerHTML='';
+  card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop');
+  // acento por tema de la tarjeta
+  document.documentElement.style.setProperty('--accent', cur.cyan?'var(--cyan)':'var(--amber)');
+  document.documentElement.style.setProperty('--accent2', cur.cyan?'var(--cyan2)':'var(--amber2)');
+}
+function buildSolution(){
+  return '<div class="sol">'+cur.sol.map(s=>`<div class="step"><span class="lab">${s[0]}</span><span>${s[1]}</span></div>`).join('')+'</div>';
+}
+function showSolutionOnly(){
+  const fb=document.getElementById('fb'),inner=document.getElementById('fbinner');
+  inner.className='fbinner';
+  inner.innerHTML=`<div class="verdict" style="color:var(--accent2)">📐 Solución</div>`+buildSolution();
+  fb.classList.add('show');
+}
+function check(){
+  const raw=document.getElementById('ans').value.trim().replace(',','.');
+  if(raw===''){document.getElementById('ans').focus();return;}
+  const u=parseFloat(raw); if(isNaN(u))return;
+  const a=cur.ans; const err=Math.abs(u-a)/Math.max(Math.abs(a),1e-9);
+  const ok=err<=0.03;
+  verified=true;
+  const k=cur._key;
+  stats[k].t++; if(ok){stats[k].c++; stats.streak++; if(stats.streak>stats.best)stats.best=stats.streak;}
+  else stats.streak=0;
+  saveStats(); renderStats();
+  const fb=document.getElementById('fb'),inner=document.getElementById('fbinner'),card=document.getElementById('card');
+  inner.className='fbinner '+(ok?'ok':'no');
+  inner.innerHTML=`<div class="verdict ${ok?'ok':'no'}">${ok?'✓ ¡Correcto!':'✗ Casi — la respuesta es '+fmt(a)+' '+cur.unit}</div>`+buildSolution();
+  fb.classList.add('show');
+  document.getElementById('check').textContent='Siguiente →';
+  if(!ok){card.classList.remove('shake');void card.offsetWidth;card.classList.add('shake');}
+  else{card.classList.remove('pop');void card.offsetWidth;card.classList.add('pop');}
+}
+function renderStats(){
+  const tot=stats.mas.t+stats.ma.t, cor=stats.mas.c+stats.ma.c;
+  document.getElementById('streak').textContent=stats.streak;
+  document.getElementById('streak').className='flame'+(stats.streak>=3?' live':'');
+  document.getElementById('best').textContent=stats.best>0?('máx '+stats.best):'';
+  document.getElementById('correct').textContent=cor;
+  document.getElementById('total').textContent='/'+tot;
+  document.getElementById('acc').textContent=tot?Math.round(100*cor/tot):'—';
+}
+// ---- persistencia (best-effort) ----
+// ---- persistencia (funciona en claude.ai y como página web) ----
+const KEY='entrenador_fisica_stats_v3';
+const Store={
+  async get(k){
+    if(typeof window!=='undefined'&&window.storage){try{const r=await window.storage.get(k);return r&&r.value!=null?r.value:null;}catch(e){}}
+    try{const lv=localStorage.getItem(k);if(lv!=null)return lv;}catch(e){}
+    return null;
+  },
+  async set(k,val){
+    if(typeof window!=='undefined'&&window.storage){try{await window.storage.set(k,val);return;}catch(e){}}
+    try{localStorage.setItem(k,val);}catch(e){}
+  }
+};
+async function loadStats(){
+  try{const raw=await Store.get(KEY); if(raw){const s=JSON.parse(raw); if(s&&s.mas&&s.ma)stats=s;}}catch(e){}
+  document.getElementById('persistNote').textContent='Tu progreso se guarda en este navegador.';
+  renderStats();
+}
+async function saveStats(){ try{await Store.set(KEY,JSON.stringify(stats));}catch(e){} }
+
+// ---- listeners ----
+document.getElementById('topicSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  topic=b.dataset.t;
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
+  e.currentTarget.classList.toggle('cyan',topic==='ma');
+  next();
+});
+document.getElementById('level').addEventListener('change',e=>{level=e.target.value;next();});
+document.getElementById('check').addEventListener('click',()=>{verified?next():check();});
+document.getElementById('sol').addEventListener('click',()=>{ if(!verified)showSolutionOnly(); else document.getElementById('fb').classList.add('show'); });
+document.getElementById('ans').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();verified?next():check();}});
+
+loadStats(); next();
+</script>
